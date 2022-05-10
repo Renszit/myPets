@@ -9,15 +9,22 @@ import {
   Image,
   FlatList,
   SafeAreaView,
-  TouchableOpacity,
   Pressable,
 } from "react-native";
 
 import * as secrets from "./secrets.json";
 
+export type Animal = {
+  name: string;
+  image_url: string;
+  description: string;
+  id: number;
+  species_id: number;
+};
+
 export default function App() {
   const [token, setToken] = useState(null);
-  const [fetchedAnimals, setFetchedAnimals] = useState([]);
+  const [fetchedAnimals, setFetchedAnimals] = useState<Array<Animal>>([]);
 
   const [selectedFilter, setFilter] = useState("");
 
@@ -34,10 +41,10 @@ export default function App() {
   }, [token]);
 
   const getToken = async () => {
-    const { data } = await axios.post(
-      "https://api-staging.felmo.de/v1/auth/login",
-      { email: secrets.email, password: secrets.password }
-    );
+    const { data } = await axios.post(secrets.loginUrl, {
+      email: secrets.email,
+      password: secrets.password,
+    });
     setToken(data.token);
   };
 
@@ -48,11 +55,7 @@ export default function App() {
   };
 
   const getAnimals = async () => {
-    const { data } = await axios.get(
-      "https://api-staging.felmo.de/v1/app/my-pets",
-      config
-    );
-
+    const { data } = await axios.get(secrets.getPetsUrl, config);
     setFetchedAnimals(data);
   };
 
@@ -87,7 +90,7 @@ export default function App() {
     );
   };
 
-  const filterAnimals = (animal) => {
+  const filterAnimals = (animal: Animal) => {
     if (selectedFilter === "dog") {
       return animal.species_id === 1;
     } else if (selectedFilter === "cat") {
@@ -122,7 +125,7 @@ export default function App() {
           data={fetchedAnimals.filter((animal) => {
             return filterAnimals(animal);
           })}
-          keyExtractor={(item, index) => item.id}
+          keyExtractor={(item: Animal, index) => item.id.toString()}
           renderItem={renderItem}
         />
       </View>
